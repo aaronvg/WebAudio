@@ -503,6 +503,145 @@ function createDelay() {
 	if (this.event)
 		this.event.preventDefault();
 }
+function onUpdateInnerCone(event, ui) {
+	updateSlider(event).audioNode.innerCone.value = event.target.value;
+}
+
+function onUpdateOuterCone(event, ui) {
+	updateSlider(event).audioNode.innerCone.value = event.target.value;
+}
+
+function onUpdatePositionX(event, ui) {
+
+}
+
+function onUpdatePositionY(event, ui) {
+
+}
+
+function onUpdatePositionZ(event, ui) {
+
+}
+
+function onUpdateOrientationX(event, ui) {
+
+}
+
+function onUpdateOrientationY(event, ui) {
+	
+}
+
+function onUpdateOrientationZ(event, ui) {
+	
+}
+
+function onUpdateRolloff(event, ui) {
+	updateSlider(event).audioNode.rollOffFactor.value = event.target.value;
+}
+
+const distanceModels = ["exponential" , "linear"];
+function switchFilterTypes(event) {
+	var select = event.target;
+	var fType = select.selectedIndex;
+
+	var e = select.parentNode;
+	while (e && !e.audioNode)
+		e = e.parentNode;
+	if (e) {
+		e.audioNode.type = filterTypes[fType];
+		if (fType>2 && fType<6) {
+			e.children[0].children[3].classList.remove("disabled");
+		} else {
+			e.children[0].children[3].classList.add("disabled");
+		}
+	}
+}
+
+function createPannerNode() {
+	var module = createNewModule("panner", true, true);
+	addModuleSlider( module, "innerCone", 0, 0.0, 360, 1, "deg", (event, ui)=> {
+		updateSlider(event).audioNode.coneInnerAngle = event.target.value;
+	} );
+	//The inner cone is where gain (volume) is always emulated at a maximum and the outer cone is where the gain starts to drop away.
+	addModuleSlider( module, "outerCone", 0, 0.0, 360, 1, "deg", (event, ui) => {
+		updateSlider(event).audioNode.coneOuterAngle = event.target.value;
+	} );
+	addModuleSlider( module, "outerGain", 0.3, 0.0, 1, .1, "gain", (event, ui) => {
+		updateSlider(event).audioNode.coneOuterGain = event.target.value;
+	} );
+	addModuleSlider( module, "posX", 0.3, 0.0, 10000, 1, "units", (event, ui) => {
+		updateSlider(event).audioNode.positionX.value = event.target.value;
+	} );
+	addModuleSlider( module, "posY", 0.3, 0.0, 10000, 1, "units", (event, ui) => {
+		updateSlider(event).audioNode.positionY.value = event.target.value;
+	} );
+	addModuleSlider( module, "posZ", 0, 0, 10000, 1, "units", (event, ui) => {
+		updateSlider(event).audioNode.positionZ.value = event.target.value;
+	} );
+	addModuleSlider( module, "rollOff", 10, 0, 100, 1, "units", (event, ui) => {
+		updateSlider(event).audioNode.rolloffFactor = event.target.value;
+	} );
+
+	const pannerModel = 'HRTF';
+	// // Add footer element
+	// var footer = document.createElement("footer");
+	// var sel = document.createElement("select");
+	// // distance model
+	// sel.className = "distance-model";
+	// distanceModels.forEach((v) => {
+	// 	var opt = document.createElement("option");
+	// 	opt.appendChild( document.createTextNode(v));
+	// 	sel.appendChild( opt );
+	// })
+	// sel.onchange = (event) => {
+	// 	var select = event.target;
+	// 	var fType = select.selectedIndex;
+	// 	var e = select.parentNode;
+	// 	while (e && !e.audioNode)
+	// 		e = e.parentNode;
+	// 	if (e) {
+	// 		e.audioNode.distanceModel = distanceModels[fType];
+	// 	}
+	// };
+	// footer.appendChild( sel );
+	// module.appendChild( footer );
+
+	module = module.parentNode;
+
+	var panner = audioContext.createPanner();
+	panner.panningModel = 'HRTF';
+	panner.distanceModel = 'linear';
+	panner.refDistance = 1;
+	panner.maxDistance = 10000;
+	panner.rolloffFactor = 1;
+	panner.coneInnerAngle = 360;
+	panner.coneOuterAngle = 0;
+	panner.coneOuterGain = 0;
+	panner.setOrientation(1,0,0);
+
+	var listener = audioContext.listener;
+	listener.setOrientation(0,0,-1,0,1,0);
+
+	// set up listener and panner position information
+	var WIDTH = window.innerWidth;
+	var HEIGHT = window.innerHeight;
+
+	var xPos = WIDTH/2;
+	var yPos = HEIGHT/2;
+
+	leftBound = (-xPos) + 50;
+	rightBound = xPos - 50;
+
+	xIterator = WIDTH/150;
+
+	// listener will always be in the same place for this demo
+	listener.setPosition(xPos,yPos,300);
+
+	module.audioNode = panner;
+	if (this.event)
+		this.event.preventDefault();
+	
+}
 
 function createAudioBufferSourceFromMenu(event) {
 	createAudioBufferSource(null);
@@ -547,7 +686,7 @@ function createAudioBufferSource( buffer ) {
 		module.buffer = buffer;
 	}
 
-	opt.appendChild( document.createTextNode("glass-hit.ogg"));
+	opt.appendChild( document.createTextNode("glass-hitz.ogg"));
 	sel.appendChild( opt );
 	opt = document.createElement("option");
 	opt.appendChild( document.createTextNode("drums.ogg"));
@@ -562,8 +701,17 @@ function createAudioBufferSource( buffer ) {
 	opt.appendChild( document.createTextNode("bass.ogg"));
 	sel.appendChild( opt );
 	opt = document.createElement("option");
-	opt.appendChild( document.createTextNode("guitar.ogg"));
+	opt.appendChild( document.createTextNode("ep9-8podcasts.mp3"));
 	sel.appendChild( opt );
+	opt = document.createElement("option");
+	opt.appendChild( document.createTextNode("reunited-apart-splash.mp3"));
+	sel.appendChild( opt );
+	// opt = document.createElement("option");
+	// opt.appendChild( document.createTextNode("reunited-apart-splash.mp3"));
+	// sel.appendChild( opt );
+	// opt = document.createElement("option");
+	// opt.appendChild( document.createTextNode("guitar.ogg"));
+	// sel.appendChild( opt );
 	opt = document.createElement("option");
 	opt.appendChild( document.createTextNode("  add new..."));
 	sel.appendChild( opt );
@@ -810,7 +958,9 @@ var drumsBuffer,
     guitarBuffer,
     irHallBuffer,
     irDrumRoomBuffer,
-    irParkingGarageBuffer;
+    irParkingGarageBuffer,
+	podcast1Buffer,
+	podcast2Buffer;
 
 function startLoadingSounds() {
 	var glassRequest = new XMLHttpRequest();
@@ -834,6 +984,8 @@ function startLoadingSounds() {
 		} );
 	}
 	drumRequest.send();
+
+
 
 
 	noiseRequest = new XMLHttpRequest();
@@ -869,16 +1021,28 @@ function startLoadingSounds() {
 	}
 	bassRequest.send();
 
-	guitarRequest = new XMLHttpRequest();
-	guitarRequest.open("GET", "sounds/guitar.ogg", true);
-	guitarRequest.responseType = "arraybuffer";
-	guitarRequest.onload = function() {
-	  audioContext.decodeAudioData( guitarRequest.response, function(buffer) { 
-	    	guitarBuffer = buffer; 
-	    	buffers[5]= guitarBuffer;
+	podcast1 = new XMLHttpRequest();
+	podcast1.open("GET", "sounds/ep9-8podcasts.mp3", true);
+	podcast1.responseType = "arraybuffer";
+	podcast1.onload = function() {
+	  audioContext.decodeAudioData( podcast1.response, function(buffer) { 
+	    	podcast1Buffer = buffer; 
+	    	buffers[5]= podcast1Buffer;
 		} );
 	}
-	guitarRequest.send();
+	podcast1.send();
+
+	podcast2 = new XMLHttpRequest();
+	podcast2.open("GET", "sounds/reunited-apart-splash2.mp3", true);
+	podcast2.responseType = "arraybuffer";
+	podcast2.onload = function() {
+	  audioContext.decodeAudioData( podcast2.response, function(buffer) { 
+	    	podcast2Buffer = buffer; 
+	    	buffers[6]= podcast2Buffer;
+		} );
+	}
+	podcast2.send();
+
 
 
 	var irHallRequest = new XMLHttpRequest();
@@ -889,6 +1053,8 @@ function startLoadingSounds() {
 	    irHallBuffer = buffer; } );
 	}
 	irHallRequest.send();
+
+
 }
 
 function setClickHandler( id, handler ) {
@@ -925,6 +1091,8 @@ function init() {
 	setClickHandler( "cgai", createGain );
 	setClickHandler( "ccon", createConvolver );
 	setClickHandler( "cana", createAnalyser );
+	setClickHandler( "pan", createPannerNode );
+
 
 //	if (navigator.userAgent.indexOf("Android") != -1)
 //		document.body.style.zoom = "2";

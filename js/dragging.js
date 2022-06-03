@@ -169,7 +169,7 @@ function startDraggingConnector(event) {
     shape.setAttributeNS(null, "x2", x);
     shape.setAttributeNS(null, "y2", y);
     shape.setAttributeNS(null, "stroke", "black");
-	shape.setAttributeNS(null, "stroke-width", "5");
+	shape.setAttributeNS(null, "stroke-width", "8");
 	dragObj.connectorShape=shape;
 
     document.getElementById("svgCanvas").appendChild(shape);
